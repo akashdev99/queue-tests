@@ -1,6 +1,10 @@
 # Queue-tests [![Build Status](https://travis-ci.com/christianrpetrin/queue-tests.svg?branch=master)](https://travis-ci.com/christianrpetrin/queue-tests) 
 Package queue-tests tests a number of queue implementations for performance and memory consumption.
 
+Chnage Description
+
+This was forked from teh original implementation to add bulk enqueu and bulk dequeue . We also saw a significant improvement in performance when there are multiple cycles of enqueue and dequeue . 
+
 ## How to Use
 This package is mostly useful to run its benchmark tests. Run below commands to clone and get the repo ready for running the tests locally.
 
