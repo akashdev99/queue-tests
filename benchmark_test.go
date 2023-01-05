@@ -22,6 +22,7 @@ package tests
 
 import (
 	"container/list"
+	"queue/queueimpl8"
 	"strconv"
 	"testing"
 
@@ -58,6 +59,7 @@ var (
 	// Used to store temp values, avoiding any compiler optimizations.
 	tmp  interface{}
 	tmp2 bool
+	tmp3 int
 )
 
 func BenchmarkList(b *testing.B) {
@@ -310,8 +312,78 @@ func BenchmarkImpl7(b *testing.B) {
 	}
 }
 
-// Below are supplemental tests.
+func BenchmarkImpl8(b *testing.B) {
+	for _, test := range tests {
+		b.Run(strconv.Itoa(test.count), func(b *testing.B) {
+			for n := 0; n < b.N; n++ {
+				q := queueimpl8.NewQueue[int]()
 
+				for i := 0; i < test.count; i++ {
+					q.Push(i)
+
+					if test.remove && i > 0 && i%3 == 0 {
+						tmp, tmp2 = q.Pop()
+					}
+				}
+				for q.Length() > 0 {
+					tmp, tmp2 = q.Pop()
+				}
+			}
+		})
+	}
+}
+
+func BenchmarkImpl7_Single_PushPop(b *testing.B) {
+	const repeat = 1
+	for _, test := range tests {
+		msgList := generateItems(test.count)
+		var q *queueimpl7.Queueimpl7
+		b.ResetTimer()
+
+		b.Run(strconv.Itoa(test.count), func(b *testing.B) {
+			q = queueimpl7.New()
+			for i := 0; i < b.N; i++ {
+				for m := 0; m < repeat; m++ {
+					for k := 0; k < test.count; k++ {
+						q.Push(msgList[k])
+					}
+				}
+
+				for m := 0; m < repeat; m++ {
+					j := 0
+					for j < test.count {
+						tmp, _ = q.Pop()
+						j++
+					}
+				}
+			}
+		})
+	}
+}
+
+func BenchmarkImpl8_Bulk_PushPop(b *testing.B) {
+	const repeat = 1
+	for _, test := range tests {
+		msgList := generateItems(test.count)
+		var q *queueimpl8.Queue[int]
+		b.ResetTimer()
+
+		b.Run(strconv.Itoa(test.count), func(b *testing.B) {
+			q = queueimpl8.NewQueue[int]()
+			for i := 0; i < b.N; i++ {
+				for m := 0; m < repeat; m++ {
+					q.Enqueue(msgList)
+				}
+
+				for m := 0; m < repeat; m++ {
+					tmp = q.Dequeue(test.count)
+				}
+			}
+		})
+	}
+}
+
+// Below are supplemental tests
 func BenchmarkCookiejar(b *testing.B) {
 	for _, test := range tests {
 		b.Run(strconv.Itoa(test.count), func(b *testing.B) {
@@ -352,4 +424,12 @@ func BenchmarkBcmills(b *testing.B) {
 			}
 		})
 	}
+}
+
+// utility functions
+func generateItems(count int) (out []int) {
+	for i := 0; i < count; i++ {
+		out = append(out, i)
+	}
+	return out
 }
