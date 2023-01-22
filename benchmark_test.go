@@ -22,7 +22,7 @@ package tests
 
 import (
 	"container/list"
-	"queue/queueimpl8"
+	"queuetest/queueimpl8"
 	"strconv"
 	"testing"
 
@@ -34,7 +34,6 @@ import (
 	"github.com/christianrpetrin/queue-tests/queueimpl5"
 	"github.com/christianrpetrin/queue-tests/queueimpl6"
 	"github.com/christianrpetrin/queue-tests/queueimpl7"
-	gammazero "github.com/gammazero/deque"
 	juju "github.com/juju/utils/deque"
 	phf "github.com/phf/go-queue/queue"
 	cookiejar "gopkg.in/karalabe/cookiejar.v2/collections/queue"
@@ -59,7 +58,7 @@ var (
 	// Used to store temp values, avoiding any compiler optimizations.
 	tmp  interface{}
 	tmp2 bool
-	tmp3 int
+	tmp3 []int
 )
 
 func BenchmarkList(b *testing.B) {
@@ -312,27 +311,8 @@ func BenchmarkImpl7(b *testing.B) {
 	}
 }
 
-func BenchmarkImpl8(b *testing.B) {
-	for _, test := range tests {
-		b.Run(strconv.Itoa(test.count), func(b *testing.B) {
-			for n := 0; n < b.N; n++ {
-				q := queueimpl8.NewQueue[int]()
-
-				for i := 0; i < test.count; i++ {
-					q.Push(i)
-
-					if test.remove && i > 0 && i%3 == 0 {
-						tmp, tmp2 = q.Pop()
-					}
-				}
-				for q.Length() > 0 {
-					tmp, tmp2 = q.Pop()
-				}
-			}
-		})
-	}
-}
-
+// Push and pop elements "N" elements from the queue one by one (Original implementation)
+// Repeat cycle - repeat cycle of "M" means within a single benchmark cycle the enqueue and dequeue will be done "M" times
 func BenchmarkImpl7_Single_PushPop(b *testing.B) {
 	const repeat = 1
 	for _, test := range tests {
@@ -361,22 +341,24 @@ func BenchmarkImpl7_Single_PushPop(b *testing.B) {
 	}
 }
 
+// Push and pop elements "N" elements from the queue one by one (Original implementation)
+// Repeat cycle - repeat cycle of "M" means within a single benchmark cycle the enqueue and dequeue will be done "M" times
 func BenchmarkImpl8_Bulk_PushPop(b *testing.B) {
 	const repeat = 1
 	for _, test := range tests {
 		msgList := generateItems(test.count)
-		var q *queueimpl8.Queue[int]
+		var q *queueimpl8.Queueimpl8[int]
 		b.ResetTimer()
 
 		b.Run(strconv.Itoa(test.count), func(b *testing.B) {
-			q = queueimpl8.NewQueue[int]()
+			q = queueimpl8.New[int]()
 			for i := 0; i < b.N; i++ {
 				for m := 0; m < repeat; m++ {
 					q.Enqueue(msgList)
 				}
 
 				for m := 0; m < repeat; m++ {
-					tmp = q.Dequeue(test.count)
+					tmp3 = q.Dequeue(test.count)
 				}
 			}
 		})

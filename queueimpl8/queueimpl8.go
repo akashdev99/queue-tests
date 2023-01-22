@@ -17,9 +17,9 @@ var (
 	maxInternalSliceSize = 128
 )
 
-// Queue represents an unbounded, dynamically growing FIFO queue.
+// Queueimpl8 represents an unbounded, dynamically growing FIFO queue.
 // The zero value for queue is an empty queue ready to use.
-type Queue[T any] struct {
+type Queueimpl8[T any] struct {
 	// Head points to the first node of the linked list.
 	head *Node[T]
 
@@ -55,13 +55,13 @@ type Node[T any] struct {
 	n *Node[T]
 }
 
-// NewQueue returns an initialized queue.
-func NewQueue[T any]() *Queue[T] {
-	return new(Queue[T]).Init()
+// New returns an initialized queue.
+func New[T any]() *Queueimpl8[T] {
+	return new(Queueimpl8[T]).Init()
 }
 
 // Init initializes or clears queue q.
-func (q *Queue[T]) Init() *Queue[T] {
+func (q *Queueimpl8[T]) Init() *Queueimpl8[T] {
 	q.head = nil
 	q.tail = nil
 
@@ -72,9 +72,9 @@ func (q *Queue[T]) Init() *Queue[T] {
 	return q
 }
 
-// Length returns the number of elements of queue q.
+// Len returns the number of elements of queue q.
 // The complexity is O(1).
-func (q *Queue[T]) Length() int {
+func (q *Queueimpl8[T]) Len() int {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
 	length := q.len
@@ -87,13 +87,13 @@ func (q *Queue[T]) Length() int {
 //	if the queue is empty, false will be returned.
 //
 // The complexity is O(1).
-func (q *Queue[T]) Front() (interface{}, bool) {
+func (q *Queueimpl8[T]) Front() (T, bool) {
 	q.mu.RLock()
 	headNode := q.head
 	q.mu.RUnlock()
 
 	if headNode == nil {
-		return nil, false
+		return *new(T), false
 	}
 
 	return headNode.v[q.hp], true
@@ -101,7 +101,7 @@ func (q *Queue[T]) Front() (interface{}, bool) {
 
 // Push adds a value to the queue.
 // The complexity is O(1).
-func (q *Queue[T]) Push(v T) {
+func (q *Queueimpl8[T]) Push(v T) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	if q.head == nil {
@@ -121,7 +121,7 @@ func (q *Queue[T]) Push(v T) {
 }
 
 // Bulk push
-func (q *Queue[T]) Enqueue(v []T) {
+func (q *Queueimpl8[T]) Enqueue(v []T) {
 	var (
 		vStartIndex     int
 		vEndIndex       int
@@ -181,13 +181,13 @@ func (q *Queue[T]) Enqueue(v []T) {
 	q.len += vCount
 }
 
-func (q *Queue[T]) appendToTail(v []T, vStartIndex int, vEndIndex int, length int) (remaining int) {
+func (q *Queueimpl8[T]) appendToTail(v []T, vStartIndex int, vEndIndex int, length int) (remaining int) {
 	q.tail.v = append(q.tail.v, v[vStartIndex:vEndIndex]...)
 	q.tp += vEndIndex - vStartIndex
 	return length - vEndIndex
 }
 
-func (q *Queue[T]) Dequeue(count int) []T {
+func (q *Queueimpl8[T]) Dequeue(count int) []T {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 
@@ -244,7 +244,7 @@ func (q *Queue[T]) Dequeue(count int) []T {
 //WARNING -  Single pop for generics only added for benchmarking , not for implementation
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-func (q *Queue[T]) Pop() (T, bool) {
+func (q *Queueimpl8[T]) Pop() (T, bool) {
 	q.mu.Lock()
 	defer q.mu.Unlock()
 	if q.head == nil {
@@ -265,7 +265,7 @@ func (q *Queue[T]) Pop() (T, bool) {
 }
 
 // Print Queue Content
-func (q *Queue[T]) Print() {
+func (q *Queueimpl8[T]) Print() {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
 	node := q.head
@@ -288,7 +288,7 @@ func (q *Queue[T]) Print() {
 }
 
 // Number of nodes in Linked List
-func (q *Queue[T]) NoOfNodes() (count int) {
+func (q *Queueimpl8[T]) NoOfNodes() (count int) {
 	q.mu.RLock()
 	defer q.mu.RUnlock()
 	node := q.head
